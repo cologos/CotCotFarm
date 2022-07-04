@@ -1,0 +1,9 @@
+parameters:
+  level: max
+  paths:
+    - src
+    - tests
+  tmpDir: .tmp
+  excludes_analyse:
+        - './src/view/'
+        - './src/template/'

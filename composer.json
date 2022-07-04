@@ -1,0 +1,22 @@
+{
+    "name": "cologos/cotcotfarm",
+    "description": "Jeu de simulation de poules",
+    "type": "project",
+    "require": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "cotcotfarm\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "cotcotfarm\\Tests\\": "tests"
+        }
+    },
+    "require-dev": {
+        "spatie/phpunit-watcher": "^1.23",
+        "phpstan/phpstan": "^0.12.99"
+    }
+}

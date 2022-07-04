@@ -1,0 +1,86 @@
+image: jakzal/phpqa:php7.4-alpine
+
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
+stages:
+  - SecurityChecker
+  - CodingStandards
+  - UnitTests
+  - CodeQuality
+
+security-checker:
+  stage: SecurityChecker
+  script:
+    - composer install
+    - local-php-security-checker --format=json
+  allow_failure: false
+
+phpcs:
+  stage: CodingStandards
+  script:
+    - composer install
+    - phpcs -v --standard=PSR12 --config-set show_warnings 0 --ignore=./src/Kernel.php ./src > phpcs.xml
+  artifacts: 
+    when: always
+    reports:
+      codequality: phpcs.xml
+  allow_failure: false
+
+phpstan:
+  stage: CodingStandards
+  script:
+    - composer install
+    - phpstan analyse ./src ./tests --error-format=gitlab -c ./phpstan.neon > phpstan.xml
+  artifacts: 
+    when: always
+    reports:
+      codequality: phpstan.xml
+  allow_failure: false
+
+phpunit:
+  stage: UnitTests
+  before_script:
+    - apk --update --no-cache add autoconf g++ make
+    - pecl install xdebug-3.0.0
+    - docker-php-ext-enable xdebug
+    - composer install
+  variables:
+    XDEBUG_MODE: "coverage"
+  script:
+    vendor/bin/phpunit tests --coverage-text --colors=never --log-junit phpUnit.xml
+  artifacts:
+    when: always
+    reports:
+      cobertura: phpUnit.xml
+      junit: phpUnit.xml
+  allow_failure: false
+
+code_quality:
+  stage: CodeQuality
+  image: docker:stable
+  allow_failure: true
+  services:
+    - docker:stable-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    #- export SP_VERSION=$(echo "$CI_SERVER_VERSION" | sed 's/^\([0-9]*\)\.\([0-9]*\).*/\1-\2-stable/')
+    #- docker run
+    #    --env SOURCE_CODE="$PWD"
+    #    --volume "$PWD":/code
+    #    --volume /var/run/docker.sock:/var/run/docker.sock
+    #    "registry.gitlab.com/gitlab-org/security-products/codequality:$SP_VERSION" /code
+    - docker run 
+       --env CODECLIMATE_DEBUG=1 
+       --env CODECLIMATE_CODE="$PWD" 
+       --volume "$PWD":/code 
+       --volume /var/run/docker.sock:/var/run/docker.sock 
+       --volume /tmp/cc:/tmp/cc 
+      codeclimate/codeclimate:latest analyze -f json > gl-code-quality-report.json
+  artifacts:
+    paths: 
+      - gl-code-quality-report.json
+    expire_in: 1 day
+ 
