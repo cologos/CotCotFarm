@@ -2,6 +2,7 @@
     "name": "cologos/cotcotfarm",
     "description": "Jeu de simulation de poules",
     "type": "project",
+    "license": "proprietary"
     "require": {
         "phpunit/phpunit": "^9.5"
     },
