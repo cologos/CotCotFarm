@@ -9,6 +9,7 @@ class View
 
     private string $file;
     private string $t;
+    private string $ViewName;
 
     public function __construct(string $action)
     {
@@ -18,7 +19,9 @@ class View
             
         } else {
             $this->file = 'src/template/template.php';
-        }       
+        }  
+        
+        $this->setViewName($action);
     }
 
     // Génère et affiche la vue
@@ -57,5 +60,15 @@ class View
     {
         unset($this->file);
         unset($this->t);
+    }
+
+    public function setViewName(string $name): void
+    {
+        $this->name = $name;
+    }
+        
+    public function getViewName(): string
+    {
+        return $this->name;
     }
 }

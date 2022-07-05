@@ -13,10 +13,16 @@ class AccueilController
     private View $footer;
     private View $body;
 
-
     public function __construct()
     {
+        $this->setheader(new View('Header'));
+        $this->setmenu(new View('Menu'));
+        $this->setbody(new View('Body'));
+        $this->setfooter(new View('Footer'));
+        $this->setview(new View('Accueil'));
+
         $this->display();
+
     }
 
     public function display(): void
@@ -25,35 +31,98 @@ class AccueilController
         $allData = array();
 
         //generate Header View
-        $this->header = new View('Header');
-        $allData['contentHeader'] = $this->header->generate();
+        
+        $allData['contentHeader'] = $this->getHeader()->generate();
 
         // generate Menu View 
-        $this->menu = new View('Menu');
-        $allData['contentMenu'] = $this->menu->generate();
+       
+        $allData['contentMenu'] = $this->getMenu()->generate();
 
          //generate Body View
-         $this->body = new View('Body');
-         $allData['contentBody'] = $this->body->generate();
+         
+         $allData['contentBody'] = $this->getBody()->generate();
 
         // generate Footer View
-        $this->footer = new View('Footer');
-        $allData['contentFooter'] = $this->footer->generate();
+        
+        $allData['contentFooter'] = $this->getFooter()->generate();
         
          // generate Global View 
         $allData['t'] = 'CotCotFarm';
-        $this->view = new View('Accueil');
-        $displayview = $this->view->generate($allData);
-        $this->view->display($displayview);
 
+        $displayview = $this->getView()->generate($allData);
+        $this->getView()->display($displayview);
+
+    }
+
+    protected function setView(View $view): void
+    {
+        $this->view = $view;
+    }
+
+    protected function getView(): View
+    {
+        return $this->view;
+    }
+
+    protected function setHeader(View $header): void
+    {
+        $this->header = $header;
+    }
+
+    protected function getHeader(): View
+    {
+        return $this->header;
+    }
+
+    protected function setMenu(View $menu): void
+    {
+        $this->menu = $menu;
+    }
+
+    protected function getMenu(): View
+    {
+        return $this->menu;
+    }
+
+    protected function setBody(View $body): void
+    {
+        $this->body = $body;
+    }
+
+    protected function getBody(): View
+    {
+        return $this->body;
+    }
+
+    protected function setFooter(View $footer): void
+    {
+        $this->footer = $footer;
+    }
+
+    protected function getFooter(): View
+    {
+        return $this->footer;
+    }
+
+    public function getViewName(): array
+    {
+        $allViewName = array();
+        
+        $allViewName['Accueil'] = $this->getView()->getViewName();
+        $allViewName['Header'] = $this->getHeader()->getViewName();
+        $allViewName['Menu'] = $this->getMenu()->getViewName();
+        $allViewName['Body'] = $this->getBody()->getViewName();
+        $allViewName['Footer'] = $this->getFooter()->getViewName();
+
+        return $allViewName;
     }
 
     public function __destruct()
     {
         unset($this->view);
-        unset($this->menu);
         unset($this->header);
-        unset($this->footer);
+        unset($this->menu);
         unset($this->body);
+        unset($this->footer);
     }
 }

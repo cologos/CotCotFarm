@@ -1,6 +1,3 @@
-<?php
-
-$this->t = 'CotCotFarm'; ?>
 <nav>  
     </br></br> 
     <ul class="headerMenu">   
