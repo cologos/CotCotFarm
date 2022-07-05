@@ -12,18 +12,23 @@ class View
 
     public function __construct(string $action)
     {
-        $this->file = 'src/view/' . $action . 'View.php';
+        if ($action != 'Accueil') {
+            
+            $this->file = 'src/view/' . $action . 'View.php';
+            
+        } else {
+            $this->file = 'src/template/template.php';
+        }       
     }
 
     // Génère et affiche la vue
-    public function generate(string $data=""): void
+    public function generate(array $data=array()): string
     {
-        // partie spécifique de la vue
-        $content = $this->generateFile($this->file, array('content' => $data));
+        // Génère les élément de la page
+        return $content = $this->generateFile($this->file, $data);
+    }
 
-        //template
-        $view = $this->generateFile('src/template/template.php', array('t' => $this->t, 'content' => $content));
-
+    public function display(string $view): void{
         echo $view;
     }
 
@@ -46,5 +51,11 @@ class View
         } else {
             throw new Exception('Fichier ' . $file . ' introuvable');
         }
+    }
+
+    public function __destruct()
+    {
+        unset($this->file);
+        unset($this->t);
     }
 }
