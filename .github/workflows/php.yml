@@ -72,5 +72,19 @@ jobs:
           arguments: 'src/ --level=7'
 
       ## —— Tests ✅ ———————————————————————————————————————————————————————————
-      - name: Run functionnal and unit tests
-        run: vendor\bin\phpunit-watcher watch tests --color=always
+      - name: PHPUnit Tests
+        uses: php-actions/phpunit@v3
+        env:
+         XDEBUG_MODE: coverage
+        with:
+         bootstrap: vendor/autoload.php
+         configuration: phpunit.xml
+         php_extensions: xdebug
+         args: tests --coverage-clover ./coverage.xml
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+         token: ${{ cca54a1f-43fe-416a-b466-c2477c263303 }}
+         files: ./coverage.xml
+         verbose: true
