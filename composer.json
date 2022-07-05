@@ -4,7 +4,8 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "friendsofphp/php-cs-fixer": "^3.8"
     },
     "autoload": {
         "psr-4": {
