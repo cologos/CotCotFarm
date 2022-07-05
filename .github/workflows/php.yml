@@ -71,17 +71,7 @@ jobs:
           # Arguments to add to PHPStan
           arguments: 'src/ --level=7'
 
-      ## —— JWT 💫 —————————————————————————————————————————————————————————————
-      - name: Generate the SSL keys
-        run: bin/console lexik:jwt:generate-keypair
-
       ## —— Tests ✅ ———————————————————————————————————————————————————————————
-      # We use the dev env here
-      - name: Load Doctrine fixtures and populate the Elasticsearch indexes
-        run: |
-          make load-fixtures
-          make populate
-
       - name: Run functionnal and unit tests
         run: |
           cp phpunit.xml.ci phpunit.xml
