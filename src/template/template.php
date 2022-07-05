@@ -23,9 +23,7 @@
                 </div>
             </div>
             <div id="footerContainer">
-                <div class="footer">
                 <?= $contentFooter ?>
-                </div>
             </div>
         </div>
     </body>
