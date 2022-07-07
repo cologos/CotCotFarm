@@ -1,4 +1,4 @@
-name: PHP Composer
+name: CI process PHP
 
 on:
   push:
@@ -11,29 +11,80 @@ permissions:
 
 jobs:
   build:
-
+    # https://hub.docker.com/_/ubuntu/
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: true
+      matrix:
+        php-versions: ['8.0']
     steps:
-    - uses: actions/checkout@v3
+    # —— Setup Github actions 🐙 —————————————————————————————————————————————
+      # https://github.com/actions/checkout (official)
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+      # https://github.com/shivammathur/setup-php (community)
+      - name: Setup PHP, extensions and composer with shivammathur/setup-php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, iconv, json, mbstring
+        env:
+          update: true
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
+      - name: Check PHP Version
+        run: php -v
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      # https://github.com/zhulik/redis-action (community)
+      - name: Setup Redis with zhulik/redis-action
+        uses: zhulik/redis-action@1.1.0
+        with:
+          redis version: '5'
+          
+       # —— Composer 🧙‍️ —————————————————————————————————————————————————————————
+      - name: Validate composer.json and composer.lock
+        run: composer validate
 
-    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-    # Docs: https://getcomposer.org/doc/articles/scripts.md
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
-    # - name: Run test suite
-    #   run: composer run-script test
+      - name: Cache composer dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --ignore-platform-req=php
+        
+      ## —— Coding standards ✨ ————————————————————————————————————————————————
+      ##- name: Coding standards checks (php_codesniffer + php-cs-fixer)
+      ##  run: make cs
+      ##  if: matrix.php-versions == '8.0'
+
+      ## —— Static analysis ✨ —————————————————————————————————————————————————
+      - name: Static analysis of PHP code (PHPStan)
+        uses: chindit/actions-phpstan@master
+        with:
+          # Arguments to add to PHPStan
+          arguments: 'src/ --level=7'
+
+      ## —— Tests ✅ ———————————————————————————————————————————————————————————
+      - name: PHPUnit Tests
+        uses: php-actions/phpunit@v3
+        env:
+         XDEBUG_MODE: coverage
+        with:
+         bootstrap: vendor/autoload.php
+         configuration: phpunit.xml
+         php_extensions: xdebug
+         args: tests --coverage-clover ./coverage.xml
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+         token: ${{ secrets.CODE_COV_TOKEN }}
+         files: ./coverage.xml
+         verbose: true
