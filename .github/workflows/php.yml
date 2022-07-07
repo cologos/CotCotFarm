@@ -74,6 +74,7 @@ jobs:
           php_extensions: xdebug
           bootstrap: vendor/autoload.php
           configuration: phpunit.xml
+          args: --coverage-text
         env:
           XDEBUG_MODE: coverage
           TEST_NAME: Scarlett
