@@ -69,15 +69,12 @@ jobs:
 
       ## —— Tests ✅ ———————————————————————————————————————————————————————————
       - name: PHPUnit Tests
-        uses: php-actions/phpunit@v3
-              docker/login-action@v2
+        uses: php-actions/phpunit@v4
         with:
           php_extensions: xdebug
           bootstrap: vendor/autoload.php
           configuration: phpunit.xml
           args: --coverage-text
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
         env:
           XDEBUG_MODE: coverage
           TEST_NAME: Scarlett
