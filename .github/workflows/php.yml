@@ -10,7 +10,7 @@ jobs:
     # https://hub.docker.com/_/ubuntu/
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         php-versions: ['8.0']
     steps:
