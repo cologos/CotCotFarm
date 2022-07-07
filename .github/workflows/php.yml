@@ -70,17 +70,11 @@ jobs:
       ## —— Tests ✅ ———————————————————————————————————————————————————————————
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v3
-        env:
-         XDEBUG_MODE: coverage
         with:
-         bootstrap: vendor/autoload.php
-         configuration: phpunit.xml
-         php_extensions: xdebug
-         args: tests --verbose --stderr --coverage-clover ./coverage.xml 
-
-     ## - name: Upload to Codecov
-     ##   uses: codecov/codecov-action@v2
-     ##   with:
-     ##    token: ${{ secrets.CODE_COV_TOKEN }}
-     ##    files: ./coverage.xml
-     ##    verbose: true
+          php_extensions: xdebug
+          bootstrap: vendor/autoload.php
+          configuration: test/phpunit.xml
+          args: --coverage-text
+        env:
+          XDEBUG_MODE: coverage
+          TEST_NAME: Scarlett
