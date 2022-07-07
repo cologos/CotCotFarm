@@ -14,13 +14,6 @@ jobs:
       matrix:
         php-versions: ['8.0']
     steps:
-    # —— Setup Github Container 🐙 —————————————————————————————————————————————
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
     # —— Setup Github actions 🐙 —————————————————————————————————————————————
       # https://github.com/actions/checkout (official)
       - name: Checkout
