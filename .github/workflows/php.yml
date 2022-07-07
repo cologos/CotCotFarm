@@ -69,7 +69,7 @@ jobs:
 
       ## —— Tests ✅ ———————————————————————————————————————————————————————————
       - name: PHPUnit Tests
-        uses: php-actions/phpunit@v4
+        uses: php-actions/phpunit@v3
         with:
           php_extensions: xdebug
           bootstrap: vendor/autoload.php
