@@ -19,6 +19,6 @@
     },
     "require-dev": {
         "spatie/phpunit-watcher": "^1.23",
-        "phpstan/phpstan": "^0.12.99"
+        "phpstan/phpstan": "^1.8"
     }
 }
