@@ -70,16 +70,9 @@ jobs:
           # Arguments to add to PHPStan
           ##arguments: 'src/ --level=7'
 
-      ## —— Tests ✅ ———————————————————————————————————————————————————————————
-      - name: PHPUnit tests
-        uses: php-actions/phpunit@v3
-        with:
-         configuration: phpunit.xml
-         memory_limit: 256M
-         log_junit: junit.xml
-        
+      ## —— Tests ✅ ———————————————————————————————————————————————————————————     
       - name: PHPUnit Tests
-        uses: php-actions/phpunit@v3
+        uses: php-actions/phpunit@v2
         env:
           XDEBUG_MODE: coverage
         with:
