@@ -53,7 +53,8 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
-        run: composer install --ignore-platform-req=php
+        run: composer install --prefer-dist --no-progress --no-suggest
+        ##run: composer install --ignore-platform-req=php
         
       ## —— Coding standards ✨ ————————————————————————————————————————————————
       ##- name: Coding standards checks (php_codesniffer + php-cs-fixer)
