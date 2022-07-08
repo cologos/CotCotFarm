@@ -68,15 +68,6 @@ jobs:
           arguments: 'src/ --level=7'
 
       ## —— Tests ✅ ———————————————————————————————————————————————————————————
-      - name: Install composer and dependencies
-        uses: php-actions/composer@v6
-        
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v3
         env:
@@ -86,6 +77,13 @@ jobs:
          configuration: phpunit.xml
          php_extensions: xdebug
          args: tests --coverage-clover ./coverage.xml
+         
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v2
