@@ -62,10 +62,14 @@ jobs:
 
       ## —— Static analysis ✨ —————————————————————————————————————————————————
       - name: Static analysis of PHP code (PHPStan)
-        uses: chindit/actions-phpstan@master
+        uses: php-actions/phpstan@master
         with:
+          path: src/
+          arguments: --level=7'
+        ##uses: chindit/actions-phpstan@master
+        ##with:
           # Arguments to add to PHPStan
-          arguments: 'src/ --level=7'
+          ##arguments: 'src/ --level=7'
 
       ## —— Tests ✅ ———————————————————————————————————————————————————————————
       - name: PHPUnit Tests
