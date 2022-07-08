@@ -65,7 +65,7 @@ jobs:
         uses: php-actions/phpstan@master
         with:
           path: src/
-          arguments: --level=7'
+          args: --level=7'
         ##uses: chindit/actions-phpstan@master
         ##with:
           # Arguments to add to PHPStan
