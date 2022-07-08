@@ -53,8 +53,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress
-        ##run: composer install --ignore-platform-req=php
+        run: composer install --ignore-platform-req=php
         
       ## —— Coding standards ✨ ————————————————————————————————————————————————
       ##- name: Coding standards checks (php_codesniffer + php-cs-fixer)
@@ -71,6 +70,12 @@ jobs:
       ## —— Tests ✅ ———————————————————————————————————————————————————————————
       - name: Install composer and dependencies
         uses: php-actions/composer@v6
+        
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v3
