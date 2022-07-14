@@ -5,4 +5,5 @@ use cotcotfarm\controller\AccueilController;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-new AccueilController();
+$accueil = new AccueilController();
+$accueil->display();

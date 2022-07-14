@@ -21,13 +21,10 @@ class AccueilController
         $this->setfooter(new View('Footer'));
         $this->setview(new View('Accueil'));
 
-        $this->display();
-
     }
 
-    public function display(): void
+    public function generateDisplay(): string
     {
-        $displayview = "";
         $allData = array();
 
         //generate Header View
@@ -49,9 +46,13 @@ class AccueilController
          // generate Global View 
         $allData['t'] = 'CotCotFarm';
 
-        $displayview = $this->getView()->generate($allData);
-        $this->getView()->display($displayview);
+        return $displayview = $this->getView()->generate($allData);
 
+    }
+
+    public function display(): void
+    {
+        echo $this->generateDisplay();
     }
 
     protected function setView(View $view): void

@@ -6,29 +6,29 @@ use cotcotfarm\controller\AccueilController;
 class AccueilControllerTest extends TestCase
 {
     /**test */
-    public function testDisplay()
+    public function testGenerateView()
     {
-        //etant donné que le controller est instancié
-        $controller = new AccueilController();
+        //etant donné la creation d'un controller AccueilController 
 
-        //lorsque la fonction display du controller est appelée
-        ob_start();
-        $controller->display();
-        $result = ob_get_clean();
+        $accueil = new AccueilController();
 
-        //on s'attend a trouver dans le résultat le mot "CotCotFarm" montrant qu'on a bien afficher la vue Accueil
+        //lorsque j'appelle la methode generateDisplay sur la vue header du controller AccueilController
+
+        $result = $accueil->generateDisplay();
+
+        //je m'attend a trouver dans le résultat le mot "CotCotFarm" montrant que la vue accueil a bien été générée
         $this->assertStringContainsString('CotCotFarm', $result);
 
-        //on s'attend a trouver dans le résultat la balise <div class="header"> montrant qu'on a bien afficher la vue Header
+        //on s'attend a trouver dans le résultat la balise <div class="header"> ontrant que la vue Header a bien été générée
         $this->assertStringContainsString('<div class="header">', $result);
 
-        //on s'attend a trouver dans le résultat la balise <div class="Presbody"> montrant qu'on a bien afficher la vue Body
+        //on s'attend a trouver dans le résultat la balise <div class="Presbody"> ontrant que la vue Body a bien été générée
         $this->assertStringContainsString('<div class="Presbody">', $result);
 
-        //on s'attend a trouver dans le résultat la balise <ul class="headerMenu"> montrant qu'on a bien afficher la vue Menu
+        //on s'attend a trouver dans le résultat la balise <ul class="headerMenu"> ontrant que la vue Menu a bien été générée
         $this->assertStringContainsString('<ul class="headerMenu">', $result);
 
-        //on s'attend a trouver dans le résultat la balise <ul class="headerMenu"> montrant qu'on a bien afficher la vue Menu
+        //on s'attend a trouver dans le résultat la balise <ul class="headerMenu"> ontrant que la vue Menu a bien été générée
         $this->assertStringContainsString('<div class="footer">', $result);
     }
 
