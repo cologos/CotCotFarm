@@ -1,90 +1,50 @@
 name: CI process PHP
 
-on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+on: [push, pull_request]
+
 jobs:
-  build:
-    # https://hub.docker.com/_/ubuntu/
-    runs-on: ubuntu-latest
+  tests:
+    runs-on: ubuntu-18.04
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+    env:
+      PHP_INI_VALUES: assert.exception=1, zend.assertions=1
+
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['8.0']
+        php: [ '8.1', '8.0', '7.4', '7.3', '7.2', '7.1', '7.0', '5.6', '5.5', '5.4']
+        DB: [ 'pdo/mysql', 'pdo/pgsql', 'pdo/sqlite', 'mysqli', 'pgsql', 'sqlite' ]
+        compiler: [ default ]
     steps:
-    # —— Setup Github actions 🐙 —————————————————————————————————————————————
-      # https://github.com/actions/checkout (official)
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Override PHP ini values for JIT compiler
+        if: matrix.compiler == 'jit'
+        run: echo "PHP_INI_VALUES::assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=1, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=64M" >> $GITHUB_ENV 
 
-      # https://github.com/shivammathur/setup-php (community)
-      - name: Setup PHP, extensions and composer with shivammathur/setup-php
+      - name: Install PHP${{ matrix.php }} - DB ${{ matrix.DB }}
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, iconv, json, mbstring
-        env:
-          update: true
-
-      - name: Check PHP Version
-        run: php -v
-
-      # https://github.com/zhulik/redis-action (community)
-      - name: Setup Redis with zhulik/redis-action
-        uses: zhulik/redis-action@1.1.0
-        with:
-          redis version: '5'
-          
-       # —— Composer 🧙‍️ —————————————————————————————————————————————————————————
-      - name: Validate composer.json and composer.lock
-        run: composer validate
+          php-version: ${{ matrix.php }}
+          tools: composer, pecl
+          extensions: imagick, sqlite3, pgsql, mysqli, pdo, pdo_mysql, pdo_pgsql, pdo_sqlite, mbstring
+          ini-values: ${{ env.PHP_INI_VALUES }}
+          coverage: xdebug
 
       - name: Get composer cache directory
         id: composer-cache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
       - name: Cache composer dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          restore-keys: ${{ runner.os }}-composer-   
+      - name: Install composer dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Install Composer dependencies
-        run: composer install --ignore-platform-req=php
-        
-      ## —— Coding standards ✨ ————————————————————————————————————————————————
-      ##- name: Coding standards checks (php_codesniffer + php-cs-fixer)
-      ##  run: make cs
-      ##  if: matrix.php-versions == '8.0'
-
-      ## —— Static analysis ✨ —————————————————————————————————————————————————
-      - name: Static analysis of PHP code (PHPStan)
-        uses: php-actions/phpstan@master
-        with:
-          path: src/
-        ##uses: chindit/actions-phpstan@master
-        ##with:
-          # Arguments to add to PHPStan
-          ##arguments: 'src/ --level=7'
-
-      ## —— Tests ✅ ———————————————————————————————————————————————————————————     
-      - name: PHPUnit Tests
-        uses: php-actions/phpunit@v2
+      - name: PHPUnit Test
+        run: |
+          php -d error_reporting=E_ALL -d zend.enable_gc=0 -d date.timezone=UTC -d mbstring.func_overload=7 -d mbstring.internal_encoding=UTF-8 vendor/bin/phpunit --coverage-text --configuration tests/travis/${{ matrix.DB }}.phpunit.xml
         env:
           XDEBUG_MODE: coverage
-        with:
-         bootstrap: vendor/autoload.php
-         configuration: phpunit.xml
-         php_extensions: xdebug
-         args: tests --coverage-clover ./coverage.xml
-         
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-         token: ${{ secrets.CODE_COV_TOKEN }}
-         files: ./coverage.xml
-         verbose: true
-          
