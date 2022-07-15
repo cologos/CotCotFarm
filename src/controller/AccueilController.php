@@ -105,6 +105,9 @@ class AccueilController
         return $this->footer;
     }
 
+    /**
+     * @return array<string>
+     */
     public function getViewName(): array
     {
         $allViewName = array();

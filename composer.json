@@ -4,7 +4,8 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "friendsofphp/php-cs-fixer": "^3.8"
     },
     "autoload": {
         "psr-4": {
@@ -18,6 +19,6 @@
     },
     "require-dev": {
         "spatie/phpunit-watcher": "^1.23",
-        "phpstan/phpstan": "^0.12.99"
+        "phpstan/phpstan": "^1.8"
     }
 }
