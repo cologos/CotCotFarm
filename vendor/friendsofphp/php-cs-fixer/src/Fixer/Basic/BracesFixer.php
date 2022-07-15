@@ -16,8 +16,10 @@ namespace PhpCsFixer\Fixer\Basic;
 
 use PhpCsFixer\AbstractProxyFixer;
 use PhpCsFixer\Fixer\ConfigurableFixerInterface;
+use PhpCsFixer\Fixer\ControlStructure\ControlStructureBracesFixer;
 use PhpCsFixer\Fixer\ControlStructure\ControlStructureContinuationPositionFixer;
 use PhpCsFixer\Fixer\LanguageConstruct\DeclareParenthesesFixer;
+use PhpCsFixer\Fixer\Whitespace\StatementIndentationFixer;
 use PhpCsFixer\Fixer\WhitespacesAwareFixerInterface;
 use PhpCsFixer\FixerConfiguration\FixerConfigurationResolver;
 use PhpCsFixer\FixerConfiguration\FixerConfigurationResolverInterface;
@@ -48,6 +50,11 @@ final class BracesFixer extends AbstractProxyFixer implements ConfigurableFixerI
      * @internal
      */
     public const LINE_SAME = 'same';
+
+    /**
+     * @var null|CurlyBracesPositionFixer
+     */
+    private $curlyBracesPositionFixer;
 
     /**
      * @var null|ControlStructureContinuationPositionFixer
@@ -136,8 +143,8 @@ class Foo
     /**
      * {@inheritdoc}
      *
-     * Must run before ArrayIndentationFixer, MethodArgumentSpaceFixer, MethodChainingIndentationFixer.
-     * Must run after ClassAttributesSeparationFixer, ClassDefinitionFixer, ElseifFixer, EmptyLoopBodyFixer, LineEndingFixer, NoAlternativeSyntaxFixer, NoEmptyStatementFixer, NoUselessElseFixer, SingleLineThrowFixer, SingleSpaceAfterConstructFixer, SingleTraitInsertPerStatementFixer.
+     * Must run before HeredocIndentationFixer, MethodChainingIndentationFixer.
+     * Must run after ClassAttributesSeparationFixer, ClassDefinitionFixer, EmptyLoopBodyFixer, LineEndingFixer, NoAlternativeSyntaxFixer, NoEmptyStatementFixer, NoUselessElseFixer, SingleLineThrowFixer, SingleSpaceAfterConstructFixer, SingleTraitInsertPerStatementFixer.
      */
     public function getPriority(): int
     {
@@ -147,6 +154,16 @@ class Foo
     public function configure(array $configuration = null): void
     {
         parent::configure($configuration);
+
+        $this->getCurlyBracesPositionFixer()->configure([
+            'control_structures_opening_brace' => $this->translatePositionOption($this->configuration['position_after_control_structures']),
+            'functions_opening_brace' => $this->translatePositionOption($this->configuration['position_after_functions_and_oop_constructs']),
+            'anonymous_functions_opening_brace' => $this->translatePositionOption($this->configuration['position_after_anonymous_constructs']),
+            'classes_opening_brace' => $this->translatePositionOption($this->configuration['position_after_functions_and_oop_constructs']),
+            'anonymous_classes_opening_brace' => $this->translatePositionOption($this->configuration['position_after_anonymous_constructs']),
+            'allow_single_line_empty_anonymous_classes' => $this->configuration['allow_single_line_anonymous_class_with_empty_body'],
+            'allow_single_line_anonymous_functions' => $this->configuration['allow_single_line_closure'],
+        ]);
 
         $this->getControlStructureContinuationPositionFixer()->configure([
             'position' => self::LINE_NEXT === $this->configuration['position_after_control_structures']
@@ -169,12 +186,13 @@ class Foo
     protected function applyFix(\SplFileInfo $file, Tokens $tokens): void
     {
         $this->fixCommentBeforeBrace($tokens);
-        $this->fixMissingControlBraces($tokens);
+        $this->proxyFixers['control_structure_braces']->fix($file, $tokens);
         $this->fixIndents($tokens);
         $this->fixSpaceAroundToken($tokens);
-        $this->fixDoWhile($tokens);
-
-        parent::applyFix($file, $tokens);
+        $this->proxyFixers['control_structure_continuation_position']->fix($file, $tokens);
+        $this->proxyFixers['curly_braces_position']->fix($file, $tokens);
+        $this->proxyFixers['declare_parentheses']->fix($file, $tokens);
+        $this->proxyFixers['statement_indentation']->fix($file, $tokens);
     }
 
     /**
@@ -209,8 +227,11 @@ class Foo
     protected function createProxyFixers(): array
     {
         return [
+            new ControlStructureBracesFixer(),
+            $this->getCurlyBracesPositionFixer(),
             $this->getControlStructureContinuationPositionFixer(),
             new DeclareParenthesesFixer(),
+            new StatementIndentationFixer(true),
         ];
     }
 
@@ -269,29 +290,6 @@ class Foo
                 // left trim till last line break
                 $tokens[$braceIndex] = new Token([T_WHITESPACE, substr($c, strrpos($c, "\n"))]);
             }
-        }
-    }
-
-    private function fixDoWhile(Tokens $tokens): void
-    {
-        for ($index = \count($tokens) - 1; 0 <= $index; --$index) {
-            $token = $tokens[$index];
-
-            if (!$token->isGivenKind(T_DO)) {
-                continue;
-            }
-
-            $parenthesisEndIndex = $this->findParenthesisEnd($tokens, $index);
-            $startBraceIndex = $tokens->getNextNonWhitespace($parenthesisEndIndex);
-            $endBraceIndex = $tokens->findBlockEnd(Tokens::BLOCK_TYPE_CURLY_BRACE, $startBraceIndex);
-            $nextNonWhitespaceIndex = $tokens->getNextNonWhitespace($endBraceIndex);
-            $nextNonWhitespaceToken = $tokens[$nextNonWhitespaceIndex];
-
-            if (!$nextNonWhitespaceToken->isGivenKind(T_WHILE)) {
-                continue;
-            }
-
-            $tokens->ensureWhitespaceAtIndex($nextNonWhitespaceIndex - 1, 1, ' ');
         }
     }
 
@@ -620,70 +618,10 @@ class Foo
 
                     $tokens->ensureWhitespaceAtIndex($startBraceIndex - 1, 1, $ensuredWhitespace);
                 }
-            } else {
-                $tokens->ensureWhitespaceAtIndex($startBraceIndex - 1, 1, ' ');
             }
 
             // reset loop limit due to collection change
             $limit = \count($tokens);
-        }
-    }
-
-    private function fixMissingControlBraces(Tokens $tokens): void
-    {
-        $controlTokens = $this->getControlTokens();
-
-        for ($index = $tokens->count() - 1; 0 <= $index; --$index) {
-            $token = $tokens[$index];
-
-            if (!$token->isGivenKind($controlTokens)) {
-                continue;
-            }
-
-            $parenthesisEndIndex = $this->findParenthesisEnd($tokens, $index);
-            $nextAfterParenthesisEndIndex = $tokens->getNextMeaningfulToken($parenthesisEndIndex);
-            $tokenAfterParenthesis = $tokens[$nextAfterParenthesisEndIndex];
-
-            // if Token after parenthesis is { then we do not need to insert brace, but to fix whitespace before it
-            if ($tokenAfterParenthesis->equals('{') && self::LINE_SAME === $this->configuration['position_after_control_structures']) {
-                $tokens->ensureWhitespaceAtIndex($parenthesisEndIndex + 1, 0, ' ');
-
-                continue;
-            }
-
-            // do not add braces for cases:
-            // - structure without block, e.g. while ($iter->next());
-            // - structure with block, e.g. while ($i) {...}, while ($i) : {...} endwhile;
-            if ($tokenAfterParenthesis->equalsAny([';', '{', ':'])) {
-                continue;
-            }
-
-            // do not add for 'short if' followed by alternative loop, for example: if ($a) while ($b): ? > X < ?php endwhile; ? >
-            // or 'short if' after an alternative loop, for example:  foreach ($arr as $index => $item) if ($item):
-            if ($tokenAfterParenthesis->isGivenKind([T_FOR, T_FOREACH, T_SWITCH, T_WHILE, T_IF])) {
-                $tokenAfterParenthesisBlockEnd = $tokens->findBlockEnd( // go to ')'
-                    Tokens::BLOCK_TYPE_PARENTHESIS_BRACE,
-                    $tokens->getNextMeaningfulToken($nextAfterParenthesisEndIndex)
-                );
-
-                if ($tokens[$tokens->getNextMeaningfulToken($tokenAfterParenthesisBlockEnd)]->equals(':')) {
-                    continue;
-                }
-            }
-
-            $statementEndIndex = $this->findStatementEnd($tokens, $parenthesisEndIndex);
-
-            // insert closing brace
-            $tokens->insertAt($statementEndIndex + 1, [new Token([T_WHITESPACE, ' ']), new Token('}')]);
-
-            // insert missing `;` if needed
-            if (!$tokens[$statementEndIndex]->equalsAny([';', '}'])) {
-                $tokens->insertAt($statementEndIndex + 1, new Token(';'));
-            }
-
-            // insert opening brace
-            $tokens->insertAt($parenthesisEndIndex + 1, new Token('{'));
-            $tokens->ensureWhitespaceAtIndex($parenthesisEndIndex + 1, 0, ' ');
         }
     }
 
@@ -734,69 +672,6 @@ class Foo
         return $tokens->findBlockEnd(Tokens::BLOCK_TYPE_PARENTHESIS_BRACE, $nextIndex);
     }
 
-    private function findStatementEnd(Tokens $tokens, int $parenthesisEndIndex): int
-    {
-        $nextIndex = $tokens->getNextMeaningfulToken($parenthesisEndIndex);
-        $nextToken = $tokens[$nextIndex];
-
-        if (!$nextToken) {
-            return $parenthesisEndIndex;
-        }
-
-        if ($nextToken->equals('{')) {
-            return $tokens->findBlockEnd(Tokens::BLOCK_TYPE_CURLY_BRACE, $nextIndex);
-        }
-
-        if ($nextToken->isGivenKind($this->getControlTokens())) {
-            $parenthesisEndIndex = $this->findParenthesisEnd($tokens, $nextIndex);
-
-            $endIndex = $this->findStatementEnd($tokens, $parenthesisEndIndex);
-
-            if ($nextToken->isGivenKind([T_IF, T_TRY, T_DO])) {
-                $openingTokenKind = $nextToken->getId();
-
-                while (true) {
-                    $nextIndex = $tokens->getNextMeaningfulToken($endIndex);
-                    $nextToken = isset($nextIndex) ? $tokens[$nextIndex] : null;
-                    if ($nextToken && $nextToken->isGivenKind($this->getControlContinuationTokensForOpeningToken($openingTokenKind))) {
-                        $parenthesisEndIndex = $this->findParenthesisEnd($tokens, $nextIndex);
-
-                        $endIndex = $this->findStatementEnd($tokens, $parenthesisEndIndex);
-
-                        if ($nextToken->isGivenKind($this->getFinalControlContinuationTokensForOpeningToken($openingTokenKind))) {
-                            return $endIndex;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-
-            return $endIndex;
-        }
-
-        $index = $parenthesisEndIndex;
-
-        while (true) {
-            $token = $tokens[++$index];
-
-            // if there is some block in statement (eg lambda function) we need to skip it
-            if ($token->equals('{')) {
-                $index = $tokens->findBlockEnd(Tokens::BLOCK_TYPE_CURLY_BRACE, $index);
-
-                continue;
-            }
-
-            if ($token->equals(';')) {
-                return $index;
-            }
-
-            if ($token->isGivenKind(T_CLOSE_TAG)) {
-                return $tokens->getPrevNonWhitespace($index);
-            }
-        }
-    }
-
     private function getControlTokens(): array
     {
         static $tokens = [
@@ -832,42 +707,6 @@ class Foo
         ];
 
         return $tokens;
-    }
-
-    private function getControlContinuationTokensForOpeningToken(int $openingTokenKind): array
-    {
-        if (T_IF === $openingTokenKind) {
-            return [
-                T_ELSE,
-                T_ELSEIF,
-            ];
-        }
-
-        if (T_DO === $openingTokenKind) {
-            return [T_WHILE];
-        }
-
-        if (T_TRY === $openingTokenKind) {
-            return [
-                T_CATCH,
-                T_FINALLY,
-            ];
-        }
-
-        return [];
-    }
-
-    private function getFinalControlContinuationTokensForOpeningToken(int $openingTokenKind): array
-    {
-        if (T_IF === $openingTokenKind) {
-            return [T_ELSE];
-        }
-
-        if (T_TRY === $openingTokenKind) {
-            return [T_FINALLY];
-        }
-
-        return [];
     }
 
     private function ensureWhitespaceAtIndexAndIndentMultilineComment(Tokens $tokens, int $index, string $whitespace): void
@@ -995,6 +834,15 @@ class Foo
         return $siblingIndex;
     }
 
+    private function getCurlyBracesPositionFixer(): CurlyBracesPositionFixer
+    {
+        if (null === $this->curlyBracesPositionFixer) {
+            $this->curlyBracesPositionFixer = new CurlyBracesPositionFixer();
+        }
+
+        return $this->curlyBracesPositionFixer;
+    }
+
     private function getControlStructureContinuationPositionFixer(): ControlStructureContinuationPositionFixer
     {
         if (null === $this->controlStructureContinuationPositionFixer) {
@@ -1002,5 +850,13 @@ class Foo
         }
 
         return $this->controlStructureContinuationPositionFixer;
+    }
+
+    private function translatePositionOption(string $option): string
+    {
+        return self::LINE_NEXT === $option
+            ? CurlyBracesPositionFixer::NEXT_LINE_UNLESS_NEWLINE_AT_SIGNATURE_END
+            : CurlyBracesPositionFixer::SAME_LINE
+        ;
     }
 }
