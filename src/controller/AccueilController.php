@@ -36,12 +36,13 @@ class AccueilController
         $allData['contentMenu'] = $this->getMenu()->generate();
 
          //generate Body View
-         
-         $allData['contentBody'] = $this->getBody()->generate();
+         $newsController = new NewsController(new \PDO('pgsql:host=localhost;dbname=cotcotfarm;port=5432', 'appluser', 'applusermdpadm'));
+         $news = $newsController->getSeveralNews(3);
+         $allData['contentBody'] = $this->getBody()->generate( ['news'=> $news]);
 
         // generate Footer View
         
-        $allData['contentFooter'] = $this->getFooter()->generate();
+        $allData['contentFooter'] = $this->getFooter()->generate(); 
         
          // generate Global View 
         $allData['t'] = 'CotCotFarm';
