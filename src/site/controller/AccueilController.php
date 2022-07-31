@@ -1,8 +1,8 @@
 <?php
 
-namespace cotcotfarm\controller;
+namespace cotcotfarm\site\controller;
 
-use cotcotfarm\view\View;
+use cotcotfarm\site\view\View;
 
 class AccueilController
 {

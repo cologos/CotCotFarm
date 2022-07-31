@@ -1,7 +1,7 @@
 <?php
 
-namespace cotcotfarm\controller;
-use cotcotfarm\entities\News;
+namespace cotcotfarm\site\controller;
+use cotcotfarm\site\entities\News;
 
 class NewsController
 {

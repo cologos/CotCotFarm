@@ -3,8 +3,8 @@
     namespace cotcotfarm\tests;
 
     use PHPUnit\Framework\TestCase;
-    use cotcotfarm\entities\News;
-    use cotcotfarm\controller\NewsController;
+    use cotcotfarm\site\entities\News;
+    use cotcotfarm\site\controller\NewsController;
 
     class NewsControllerTest extends TestCase
     {

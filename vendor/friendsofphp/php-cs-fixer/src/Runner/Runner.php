@@ -52,17 +52,21 @@ final class Runner
     private LinterInterface $linter;
 
     /**
-     * @var \Traversable
+     * @var \Traversable<\SplFileInfo>
      */
     private $finder;
 
     /**
-     * @var FixerInterface[]
+     * @var list<FixerInterface>
      */
     private array $fixers;
 
     private bool $stopOnViolation;
 
+    /**
+     * @param \Traversable<\SplFileInfo> $finder
+     * @param list<FixerInterface>       $fixers
+     */
     public function __construct(
         $finder,
         array $fixers,
@@ -87,6 +91,9 @@ final class Runner
         $this->stopOnViolation = $stopOnViolation;
     }
 
+    /**
+     * @return array<string, array{appliedFixers: list<string>, diff: string}>
+     */
     public function fix(): array
     {
         $changed = [];
@@ -103,7 +110,6 @@ final class Runner
             ? new FileCachingLintingIterator($fileFilteredFileIterator, $this->linter)
             : new FileLintingIterator($fileFilteredFileIterator, $this->linter);
 
-        /** @var \SplFileInfo $file */
         foreach ($collection as $file) {
             $fixInfo = $this->fixFile($file, $collection->currentLintingResult());
 
@@ -123,6 +129,9 @@ final class Runner
         return $changed;
     }
 
+    /**
+     * @return null|array{appliedFixers: list<string>, diff: string}
+     */
     private function fixFile(\SplFileInfo $file, LintingResultInterface $lintingResult): ?array
     {
         $name = $file->getPathname();

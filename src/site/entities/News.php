@@ -1,6 +1,6 @@
 <?php
 
-namespace cotcotfarm\entities;
+namespace cotcotfarm\site\entities;
 
 class News{
 
