@@ -2,6 +2,7 @@
 
 namespace cotcotfarm\tests\jeu;
 
+use cotcotfarm\common\OwnPDO;
 use PHPUnit\Framework\TestCase;
 use cotcotfarm\jeu\entities\Player;
 use cotcotfarm\jeu\controller\PlayerController;
@@ -14,10 +15,8 @@ class PlayerControllerTest extends TestCase
 
     protected function setUp() : void
     {
-        $this->pdo = new \PDO('pgsql:host=localhost;dbname=cotcotfarm', 'appluser', 'applusermdpadm', [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-        ]);
+        $this->pdo = new OwnPDO('Game');
+        $this->pdo->connect();
 
         $this->playerController = new PlayerController($this->pdo);
     }

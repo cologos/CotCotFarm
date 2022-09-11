@@ -1,6 +1,8 @@
 <?php
 
 namespace cotcotfarm\site\controller;
+
+use cotcotfarm\common\OwnPDO;
 use cotcotfarm\site\entities\News;
 
 class NewsController
@@ -9,7 +11,7 @@ class NewsController
     private $pdo;
     private $message;
 
-    public function __construct(\PDO $pdo)
+    public function __construct(OwnPDO $pdo)
     {
         $this->pdo = $pdo;
     }

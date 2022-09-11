@@ -2,6 +2,7 @@
 
 namespace cotcotfarm\site\controller;
 
+use cotcotfarm\common\OwnPDO;
 use cotcotfarm\site\view\View;
 
 class AccueilController
@@ -36,7 +37,7 @@ class AccueilController
         $allData['contentMenu'] = $this->getMenu()->generate();
 
          //generate Body View
-         $newsController = new NewsController(new \PDO('pgsql:host=localhost;dbname=cotcotfarm;port=5432', 'appluser', 'applusermdpadm'));
+         $newsController = new NewsController(new OwnPDO("Site"));
          $news = $newsController->getSeveralNews(3);
          $allData['contentBody'] = $this->getBody()->generate( ['news'=> $news]);
 

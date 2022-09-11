@@ -2,6 +2,8 @@
 
 namespace cotcotfarm\site\entities;
 
+use cotcotfarm\common\OwnPDO;
+
 class News{
 
     private string $title;
@@ -25,7 +27,7 @@ class News{
         }
     }
 
-    public function insert(\PDO $pdo) : void
+    public function insert(OwnPDO $pdo) : void
     {
         $stmt = $pdo->prepare('INSERT INTO news (title, content, author, publishedDate) VALUES (:title, :content, :author, :publishedDate)');
         $stmt->execute([
@@ -39,7 +41,7 @@ class News{
     /**
      * @return News
      */
-    public function searchWithCriteria(\PDO $pdo) : News
+    public function searchWithCriteria(OwnPDO $pdo) : News
     {
         $stmt = $pdo->prepare('SELECT id,title,content,author,publishedDate FROM news WHERE title = :title');
         $stmt->execute([
@@ -57,7 +59,7 @@ class News{
     /**
      * @return array<News>
      */
-    public static function getSeveralNews(\PDO $pdo, int $nbrNewsToGet) : array
+    public static function getSeveralNews(OwnPDO $pdo, int $nbrNewsToGet) : array
     { 
         $stmt = $pdo->prepare('SELECT id,title,content,author,publishedDate FROM news ORDER BY publishedDate DESC LIMIT :nbrNewsToGet');
         $stmt->execute([
@@ -74,7 +76,7 @@ class News{
     /**
      * @return News
      */
-    public function searchWithId(\PDO $pdo) : News
+    public function searchWithId(OwnPDO $pdo) : News
     {
         $stmt = $pdo->prepare('SELECT id,title,content,author,publishedDate FROM news WHERE id = :id');
         $stmt->execute([
@@ -89,7 +91,7 @@ class News{
         }
     }
 
-    public function delete(\PDO $pdo) : void
+    public function delete(OwnPDO $pdo) : void
     {
         $stmt = $pdo->prepare('DELETE FROM news WHERE id = :id');
         $stmt->execute([
@@ -100,7 +102,7 @@ class News{
         }
     }
 
-    public function update(\PDO $pdo) : void
+    public function update(OwnPDO $pdo) : void
     {
         $stmt = $pdo->prepare('UPDATE news SET title = :title, content = :content, author = :author, publishedDate = :publishedDate WHERE id = :id');
         $stmt->execute([

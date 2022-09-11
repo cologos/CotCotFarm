@@ -5,6 +5,7 @@
     use PHPUnit\Framework\TestCase;
     use cotcotfarm\site\entities\News;
     use cotcotfarm\site\controller\NewsController;
+    use cotcotfarm\common\OwnPDO;
 
     class NewsControllerTest extends TestCase
     {
@@ -14,10 +15,8 @@
 
         protected function setUp() : void
         {
-          $this->pdo = new \PDO('pgsql:host=localhost;dbname=cotcotfarm', 'appluser', 'applusermdpadm', [
-               \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-               \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-           ]);
+          $this->pdo = new OwnPDO('Site');
+          $this->pdo->connect();
 
            $this->newsController = new NewsController($this->pdo);
         }
