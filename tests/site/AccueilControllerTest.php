@@ -1,8 +1,9 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
-use cotcotfarm\controller\AccueilController;
+namespace cotcotfarm\tests;
 
+use PHPUnit\Framework\TestCase;
+use cotcotfarm\site\controller\AccueilController;
 class AccueilControllerTest extends TestCase
 {
     /**test */

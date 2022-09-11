@@ -1,8 +1,9 @@
 <?php
 
-namespace cotcotfarm\controller;
+namespace cotcotfarm\site\controller;
 
-use cotcotfarm\view\View;
+use cotcotfarm\common\OwnPDO;
+use cotcotfarm\site\view\View;
 
 class AccueilController
 {
@@ -36,12 +37,13 @@ class AccueilController
         $allData['contentMenu'] = $this->getMenu()->generate();
 
          //generate Body View
-         
-         $allData['contentBody'] = $this->getBody()->generate();
+         $newsController = new NewsController(new OwnPDO("Site"));
+         $news = $newsController->getSeveralNews(3);
+         $allData['contentBody'] = $this->getBody()->generate( ['news'=> $news]);
 
         // generate Footer View
         
-        $allData['contentFooter'] = $this->getFooter()->generate();
+        $allData['contentFooter'] = $this->getFooter()->generate(); 
         
          // generate Global View 
         $allData['t'] = 'CotCotFarm';

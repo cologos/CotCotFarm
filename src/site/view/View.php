@@ -1,6 +1,6 @@
 <?php
 
-namespace cotcotfarm\view;
+namespace cotcotfarm\site\view;
 
 use Exception;
 
@@ -15,10 +15,10 @@ class View
     {
         if ($action != 'Accueil') {
             
-            $this->file = 'src/view/' . $action . 'View.php';
+            $this->file = 'src/site/view/' . $action . 'View.php';
             
         } else {
-            $this->file = 'src/template/template.php';
+            $this->file = 'src/site/template/template.php';
         }  
         
         $this->setViewName($action);
